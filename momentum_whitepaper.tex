@@ -1,0 +1,94 @@
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{natbib} % for references
+\usepackage{setspace} % for line spacing
+
+\title{\textbf{Machine Learning Agent for TSX Equity Selection}}
+\author{Malhar Mukhopadhyay}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This whitepaper presents the development of a machine learning agent (\texttt{ml\_agent\_tsx.py}) designed to predict equity returns and support systematic portfolio allocation within the S\&P/TSX Composite universe. We outline the problem motivation, dataset construction, methodology, results, and next steps.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The S\&P/TSX Composite Index represents the broad Canadian equity market. While widely followed, relatively fewer academic and practitioner studies focus on applying machine learning techniques to this index compared to the U.S. markets. This paper introduces a machine learning agent that forecasts stock returns and constructs an allocation strategy. The objective is to demonstrate feasibility, performance, and scalability of such an approach.
+
+\section{Related Work}
+\begin{itemize}
+    \item Applications of machine learning in equity forecasting.
+    \item Existing research on factor models in Canadian equities.
+    \item Limitations of traditional statistical methods versus machine learning.
+\end{itemize}
+
+\section{Methodology}
+\subsection{Data Collection}
+\begin{itemize}
+    \item Data Source: Yahoo Finance (\texttt{yfinance}).
+    \item Universe: Initially a subset of TSX stocks, expanding to the full TSX Composite.
+    \item Features: Price-based signals (returns, moving averages, volatility, etc.).
+\end{itemize}
+
+\subsection{Modeling Approach}
+\begin{itemize}
+    \item Base model: Logistic Regression (via \texttt{scikit-learn}).
+    \item Target variable: Binary indicator of outperformance vs. market benchmark.
+    \item Training and validation splits.
+\end{itemize}
+
+\subsection{Portfolio Construction}
+\begin{itemize}
+    \item Predicted probabilities transformed into allocation weights.
+    \item Transaction cost adjustment included.
+    \item Rebalancing frequency.
+\end{itemize}
+
+\section{Experiments}
+\begin{itemize}
+    \item Sample backtest window (dates).
+    \item Model performance metrics (accuracy, precision, recall).
+    \item Portfolio metrics (Sharpe ratio, drawdown, cumulative returns).
+\end{itemize}
+
+\section{Results}
+\begin{itemize}
+    \item Key findings from initial tests on a limited ticker universe.
+    \item Comparison against TSX Composite benchmark.
+\end{itemize}
+
+\section{Discussion}
+\begin{itemize}
+    \item Strengths and limitations of current approach.
+    \item Sensitivity to hyperparameters and feature engineering.
+    \item Data quality and survivorship bias considerations.
+\end{itemize}
+
+\section{Next Steps}
+\begin{itemize}
+    \item Expand to full TSX Composite.
+    \item Integrate more sophisticated models (Random Forests, XGBoost, Neural Networks).
+    \item Explore fundamental and alternative datasets.
+    \item Optimize execution and risk management.
+\end{itemize}
+
+\section{Conclusion}
+This whitepaper introduced a machine learning agent for TSX equity selection. Preliminary experiments suggest that machine learning methods can capture predictive signals in Canadian equities. Future work will expand the universe, enhance models, and rigorously evaluate risk-adjusted returns.
+
+\section*{References}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
