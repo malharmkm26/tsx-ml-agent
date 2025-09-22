@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 # --------------------------
 # CONFIG
 # --------------------------
-# Example TSX tickers (append .TO). Replace/extend with your watchlist.
 #TICKERS = ["RY.TO", "TD.TO", "BNS.TO", "ENB.TO", "TRP.TO"]  # sample list
 START = "2018-01-01"
 END = datetime.today().strftime("%Y-%m-%d")
@@ -17,23 +16,6 @@ TOP_N = 3
 INITIAL_CAPITAL = 100_000
 TRANSACTION_COST_PCT = 0.001  # 0.1% per trade (example)
 SLIPPAGE_PCT = 0.0005
-
-# --------------------------
-# Function to get the tsx_composite tickers from WikiPedia
-# --------------------------
-def get_tsx_composite_tickers():
-    url = "https://en.wikipedia.org/wiki/S%26P/TSX_Composite_Index"
-    tables = pd.read_html(url)
-    df = tables[0]  # first table has tickers + company names
-    tickers = df["Symbol"].tolist()
-    # Add ".TO" suffix for yfinance
-    tickers = [t + ".TO" if not t.endswith(".TO") else t for t in tickers]
-    return tickers
-
-# Example usage
-tsx_tickers = get_tsx_composite_tickers()
-print(f"Found {len(tsx_tickers)} TSX Composite tickers")
-TICKERS = tsx_tickers
 
 # --------------------------
 # Data fetch

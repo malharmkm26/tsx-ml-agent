@@ -2,6 +2,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+import requests
 from datetime import datetime
 import matplotlib.pyplot as plt
 from sklearn.model_selection import TimeSeriesSplit, RandomizedSearchCV
@@ -22,7 +23,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # --------------------------
 # Config
 # --------------------------
-TICKERS = ["TD.TO", "BNS.TO", "ENB.TO", "TRP.TO", "BAM.TO", "CP.TO"]  # sample watchlist
+#TICKERS = ["TD.TO", "BNS.TO", "ENB.TO", "TRP.TO", "BAM.TO", "CP.TO"]  # sample watchlist
 START = "2015-01-01"
 END = datetime.today().strftime("%Y-%m-%d")
 LOOKBACK_DAYS = 252  # features history window (1 year)
@@ -36,55 +37,50 @@ RANDOM_STATE = 42
 CLASSIFIER_MODE = True  # True => classification target (up/down); False => regression (forward return)
 
 # --------------------------
+# Function to get the tsx_composite tickers from Local - original table is Wikipedia
+# --------------------------
+def get_tsx_composite_tickers_from_csv(file_path="tsx-list-of-companies.csv"):
+    df = pd.read_csv(file_path)
+    # Drop rows with missing Ticker
+    df = df.dropna(subset=['Ticker'])
+    # Ensure all tickers are strings
+    tickers = df['Ticker'].astype(str).tolist()
+    # Ensure they all end with ".TO"
+    tickers = [t if t.endswith(".TO") else t + ".TO" for t in tickers]
+    return tickers
+
+TICKERS = get_tsx_composite_tickers_from_csv()
+print(f"Loaded {len(TICKERS)} tickers from CSV")
+
+
+# --------------------------
 # Utilities / Feature functions
 # --------------------------
-def fetch_adjusted_close(tickers, start, end):
+def fetch_adjusted_close(tickers, start, end, batch_size=50):
     """
-    Fetch close prices for tickers. If a ticker fails (delisted / missing),
-    skip it and return a DataFrame with the remaining tickers.
+    Download tickers in batches to avoid yfinance throttling or 403 issues.
     """
-    print("Downloading:", tickers)
-    df = yf.download(tickers, start=start, end=end, group_by="ticker", auto_adjust=True, progress=False)
-
-    # If yfinance returned multi-index columns (multiple tickers)
-    if isinstance(df.columns, pd.MultiIndex):
-        # Try to extract Close for each ticker that exists in the response
-        close_dict = {}
-        for t in tickers:
-            try:
-                # df[t]['Close'] will raise if t not in returned columns
-                close_series = df[t]['Close'].copy()
-                if close_series.dropna().shape[0] > 0:
-                    close_dict[t] = close_series
-                else:
-                    print(f"Warning: no data for {t}, skipping.")
-            except Exception:
-                print(f"Warning: {t} not found in downloaded data, skipping.")
-        if not close_dict:
-            raise ValueError("No tickers returned from yfinance. Check tickers or network.")
-        close = pd.DataFrame(close_dict)
-    else:
-        # Single ticker case (or yfinance returned a flat frame)
-        # Determine the symbol that has data among provided tickers by inspecting columns
-        # If there is exactly one ticker in the user list, use that
-        if len(tickers) == 1:
-            # df likely contains columns like 'Open','High',..., 'Close'
-            if 'Close' in df.columns:
-                close = pd.DataFrame({tickers[0]: df['Close']})
-            else:
-                raise ValueError("Single-ticker download didn't return 'Close' column.")
+    all_close = {}
+    for i in range(0, len(tickers), batch_size):
+        batch = tickers[i:i+batch_size]
+        print(f"Downloading batch {i//batch_size + 1}: {batch}")
+        df = yf.download(batch, start=start, end=end, group_by="ticker", auto_adjust=True, progress=False)
+        if isinstance(df.columns, pd.MultiIndex):
+            for t in batch:
+                try:
+                    close_series = df[t]['Close'].copy()
+                    if close_series.dropna().shape[0] > 0:
+                        all_close[t] = close_series
+                    else:
+                        print(f"Warning: no data for {t}, skipping.")
+                except Exception:
+                    print(f"Warning: {t} not found in batch data, skipping.")
         else:
-            # Unexpected flat return for multiple tickers — try to find column names that equal tickers
-            possible = {}
-            for c in df.columns:
-                if c in tickers:
-                    possible[c] = df[c]['Close'] if isinstance(df[c], pd.DataFrame) and 'Close' in df[c].columns else df[c]
-            if possible:
-                close = pd.DataFrame(possible)
-            else:
-                raise ValueError("Unexpected yfinance response format; could not build close DataFrame.")
-    close = close.sort_index().ffill().dropna(how='all')
-    return close
+            for t in batch:
+                if t in df.columns:
+                    all_close[t] = df[t]
+    close_df = pd.DataFrame(all_close).sort_index().ffill().dropna(how='all')
+    return close_df
 
 def compute_features(close):
     """
