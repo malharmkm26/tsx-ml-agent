@@ -82,3 +82,29 @@ Add fundamental data (earnings, valuation multiples).
 Explore deep learning sequence models (e.g., LSTMs, Transformers).
 
 Implement rolling retraining for more realistic walk-forward evaluation.
+
+---------------------------
+Momentum Agent Descriptor
+---------------------------
+
+Momentum Agent (momentum_agent_tsx.py)
+
+The momentum_agent_tsx.py script implements a simple momentum-based strategy for the TSX Composite stocks. Unlike the machine learning agent, which uses historical features and model-based predictions, the momentum agent relies solely on recent price trends to guide allocations.
+
+Key Features:
+
+Lookback Windows: Computes returns over multiple horizons (e.g., 21, 63, 126, and 252 trading days) to capture short-, medium-, and long-term momentum.
+
+Ranking: For each rebalance period, stocks are ranked based on their momentum scores.
+
+Top-N Selection: The agent selects the top-N performing tickers for allocation.
+
+Equal Weight Allocation: Capital is divided equally among the selected tickers.
+
+Transaction Costs: Adjusted for a small percentage cost per trade.
+
+Backtesting: Generates a pseudo-forward equity curve to evaluate performance, including metrics such as total return, annualized return, volatility, Sharpe ratio, and maximum drawdown.
+
+Purpose:
+
+The momentum agent serves as a baseline strategy to compare against the ML agent. By analyzing the relative performance of a purely momentum-driven approach versus machine learning predictions, we can assess the incremental value added by more sophisticated modeling techniques.
