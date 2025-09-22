@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # --------------------------
 # CONFIG
 # --------------------------
-#TICKERS = ["RY.TO", "TD.TO", "BNS.TO", "ENB.TO", "TRP.TO"]  # sample list
+TICKERS = ["RY.TO", "TD.TO", "BNS.TO", "ENB.TO", "TRP.TO"]  # sample list
 START = "2018-01-01"
 END = datetime.today().strftime("%Y-%m-%d")
 LOOKBACK_MONTHS = 6         # momentum lookback

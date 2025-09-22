@@ -355,12 +355,18 @@ print("Backtest stats:", stats)
 
 # Plot equity curve
 plt.figure(figsize=(10,5))
-plt.plot(pf['value'])
+plt.plot(pf['value'], label='Portfolio Value')
 plt.title("ML Agent — Equity Curve (fixed)")
 plt.xlabel("Date")
 plt.ylabel("Portfolio Value")
 plt.grid(True)
+plt.legend()
+plt.tight_layout()
+
+# Save figure in the same folder as the script
+plt.savefig("equity_curve.png", dpi=300)
 plt.show()
+print("Equity curve saved as equity_curve.png")
 
 # If classifier: quick classification metrics
 if CLASSIFIER_MODE:
@@ -381,5 +387,10 @@ if CLASSIFIER_MODE:
 else:
     preds = best_model.predict(X_only)
     print("Regression RMSE:", np.sqrt(mean_squared_error(y.values, preds)))
+
+# Convert stats dictionary to a DataFrame for nice tabular display
+stats_df = pd.DataFrame([stats])
+print("\nBacktest Performance Metrics:")
+print(stats_df.T)  # transpose to show metric names as rows
 
 print("Done.")
